@@ -1,0 +1,79 @@
+#include <iostream>
+#include <vector>
+using namespace std;
+
+int main() {
+    // Define the matrices dynamically using vectors
+    vector<vector<int>> alloc = { { 0, 1, 0 }, 
+                                  { 2, 0, 0 }, 
+                                  { 3, 0, 2 }, 
+                                  { 2, 1, 1 }, 
+                                  { 0, 0, 2 } }; // Allocation Matrix
+                                  
+    vector<vector<int>> max = { { 7, 5, 3 }, 
+                                { 3, 2, 2 }, 
+                                { 9, 0, 2 }, 
+                                { 2, 2, 2 }, 
+                                { 4, 3, 3 } }; // MAX Matrix
+                                
+    vector<int> avail = { 3, 3, 2 }; // Available Resources
+
+    int n = alloc.size(); // Number of processes
+    int m = alloc[0].size(); // Number of resources
+
+    // Initialize necessary data structures
+    vector<int> f(n, 0); // Finish flag for processes
+    vector<int> ans(n); // To store the safe sequence
+    int ind = 0;
+
+    // Calculate the Need matrix
+    vector<vector<int>> need(n, vector<int>(m));
+    for (int i = 0; i < n; i++) {
+        for (int j = 0; j < m; j++) {
+            need[i][j] = max[i][j] - alloc[i][j];
+        }
+    }
+
+    // Check for a safe sequence
+    for (int k = 0; k < n; k++) {
+        for (int i = 0; i < n; i++) {
+            if (f[i] == 0) { // If the process is not yet finished
+                bool flag = true;
+                for (int j = 0; j < m; j++) {
+                    if (need[i][j] > avail[j]) {
+                        flag = false;
+                        break;
+                    }
+                }
+
+                if (flag) { // If resources can be allocated to process `i`
+                    ans[ind++] = i;
+                    for (int y = 0; y < m; y++) {
+                        avail[y] += alloc[i][y];
+                    }
+                    f[i] = 1;
+                }
+            }
+        }
+    }
+
+    // Check if the system is in a safe state
+    bool safe = true;
+    for (int i = 0; i < n; i++) {
+        if (f[i] == 0) {
+            safe = false;
+            cout << "The given sequence is NOT safe" << endl;
+            break;
+        }
+    }
+
+    if (safe) {
+        cout << "Following is the SAFE Sequence:" << endl;
+        for (int i = 0; i < n - 1; i++) {
+            cout << " P" << ans[i] << " ->";
+        }
+        cout << " P" << ans[n - 1] << endl;
+    }
+
+    return 0;
+}

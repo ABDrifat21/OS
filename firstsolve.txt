@@ -1,0 +1,67 @@
+#include <bits/stdc++.h>
+#include <unistd.h>
+#include <sys/wait.h>
+
+using namespace std;
+
+int main(int argc, char *argv[])
+{
+    if (argc != 4)
+    {
+        cout << "Error: The number of arguments must be three.\n";
+        return 1; // Terminate if arguments are incorrect
+    }
+
+    string parent_name = argv[1];
+    int num1 = atoi(argv[2]); // Convert the 2nd argument to an integer
+    int num2 = atoi(argv[3]); // Convert the 3rd argument to an integer
+
+    int result = 0;
+    cout << "result=" << result << endl;
+
+    pid_t pid_addition = fork();
+
+    if (pid_addition == 0)
+    {
+        // Addition child process
+        result = num1 + num2;
+        cout << "ChildProcess-" << getpid() << ": addition_result=" << result << endl;
+        return 0; // End child process
+    }
+    else if (pid_addition > 0)
+    {
+        // Parent process
+        pid_t pid_subtraction = fork();
+
+        if (pid_subtraction == 0)
+        {
+            // Subtraction child process
+            result = num1 - num2;
+            cout << "ChildProcess-" << getpid() << " : substraction_result=" << result << endl;
+            return 0; // End child process
+        }
+        else if (pid_subtraction > 0)
+        {
+            // Parent process waits for both children
+            int status;
+
+            waitpid(pid_addition, &status, 0);
+            cout << "Child " << pid_addition << " successfully finished." << endl;
+
+            waitpid(pid_subtraction, &status, 0);
+            cout << "Child " << pid_subtraction << " successfully finished." << endl;
+        }
+        else
+        {
+            cout << "Error: Failed to create subtraction process." << endl;
+            return 1;
+        }
+    }
+    else
+    {
+        cout << "Error: Failed to create addition process." << endl;
+        return 1;
+    }
+
+    return 0;
+}
